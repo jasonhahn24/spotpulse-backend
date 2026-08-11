@@ -1,0 +1,5 @@
+spring.application.name=backend
+kakao.rest-api-key=YOUR_KAKAO_REST_API_KEY
+naver.client-id=YOUR_NAVER_CLIENT_ID
+naver.client-secret=YOUR_NAVER_CLIENT_SECRET
+spring.mongodb.uri=mongodb+srv://USERNAME:PASSWORD@cluster0.xxxxx.mongodb.net/spotpulse?retryWrites=true&w=majority
