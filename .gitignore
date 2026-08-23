@@ -42,3 +42,5 @@ src/main/resources/firebase-service-account.json
 src/main/resources/firebase-service-account.json
 
 src/main/resources/application.properties
+
+jar_check/
