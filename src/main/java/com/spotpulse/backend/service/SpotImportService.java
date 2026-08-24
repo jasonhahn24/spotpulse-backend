@@ -11,6 +11,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class SpotImportService {
@@ -63,18 +64,27 @@ public class SpotImportService {
 
             for (Object obj : itemList) {
                 Map item = (Map) obj;
+                String contentId = String.valueOf(item.get("contentid"));
                 String title = (String) item.get("title");
                 String mapXStr = String.valueOf(item.get("mapx"));
                 String mapYStr = String.valueOf(item.get("mapy"));
+                String firstImage = (String) item.get("firstimage");
 
                 if (title == null || mapXStr.equals("null") || mapYStr.equals("null")) continue;
 
-                Spot spot = new Spot(
-                    title,
-                    "관광지",
-                    Double.parseDouble(mapXStr),
-                    Double.parseDouble(mapYStr)
-                );
+                // upsert: 이미 있는 관광지면 업데이트, 없으면 새로 생성
+                Optional<Spot> existing = spotRepository.findByContentId(contentId);
+                Spot spot = existing.orElseGet(Spot::new);
+
+                spot.setContentId(contentId);
+                spot.setName(title);
+                spot.setCategory("관광지");
+                spot.setMapX(Double.parseDouble(mapXStr));
+                spot.setMapY(Double.parseDouble(mapYStr));
+                if (firstImage != null && !firstImage.isEmpty()) {
+                    spot.setImageUrl(firstImage);
+                }
+
                 savedSpots.add(spotRepository.save(spot));
             }
         } catch (Exception e) {

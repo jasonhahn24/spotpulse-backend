@@ -13,6 +13,10 @@ public class Spot {
     private String category;    // 카테고리 
     private double mapX;        // 경도
     private double mapY;        // 위도
+    private String contentId;   // TourAPI 콘텐츠 ID (upsert 판단 기준)
+    private String imageUrl;    // 대표 이미지 URL 
+    private int trendPercent;   // 화제성 지표(최근 언급량 등)
+
 
     // 기본 생성자
     public Spot() {}
@@ -34,4 +38,10 @@ public class Spot {
     public void setMapX(double mapX) { this.mapX = mapX; }
     public double getMapY() { return mapY; }
     public void setMapY(double mapY) { this.mapY = mapY; }
+    public String getContentId() { return contentId; }
+    public void setContentId(String contentId) { this.contentId = contentId; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public int getTrendPercent() { return trendPercent; }
+    public void setTrendPercent(int trendPercent) { this.trendPercent = trendPercent; }
 }
