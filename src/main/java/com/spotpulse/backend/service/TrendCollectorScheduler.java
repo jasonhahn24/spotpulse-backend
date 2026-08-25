@@ -30,8 +30,29 @@ public class TrendCollectorScheduler {
 
         for (Spot spot : spots) {
             int mentionCount = naverSearchService.getTotalMentionCount(spot.getName());
+
+            // 이전 스냅샷 조회 (증가율 계산용)
+            List<TrendSnapshot> history = trendSnapshotRepository.findBySpotIdOrderByCollectedAtDesc(spot.getId());
+
+            int trendPercent = 0;
+            if (!history.isEmpty()) {
+                int previousCount = history.get(0).getMentionCount();
+                if (previousCount > 0) {
+                    trendPercent = (int) (((double) (mentionCount - previousCount) / previousCount) * 100);
+                }
+            }
+
+            // 새 스냅샷 저장
             TrendSnapshot snapshot = new TrendSnapshot(spot.getId(), mentionCount);
             trendSnapshotRepository.save(snapshot);
+
+            // Spot의 trendPercent 갱신
+            spot.setTrendPercent(trendPercent);
+            spotRepository.save(spot);
         }
+    }
+
+    public void runNow() {
+    collectTrends();
     }
 }

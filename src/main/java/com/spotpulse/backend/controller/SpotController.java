@@ -1,6 +1,8 @@
 package com.spotpulse.backend.controller;
 
+import com.spotpulse.backend.domain.Contribution;
 import com.spotpulse.backend.domain.Spot;
+import com.spotpulse.backend.repository.ContributionRepository;
 import com.spotpulse.backend.repository.SpotRepository;
 import com.spotpulse.backend.service.SpotImportService;
 import org.springframework.web.bind.annotation.*;
@@ -13,23 +15,21 @@ public class SpotController {
 
     private final SpotRepository spotRepository;
     private final SpotImportService spotImportService;
+    private final ContributionRepository contributionRepository;
 
-    public SpotController(SpotRepository spotRepository, SpotImportService spotImportService) {
+    public SpotController(SpotRepository spotRepository,
+                           SpotImportService spotImportService,
+                           ContributionRepository contributionRepository) {
         this.spotRepository = spotRepository;
         this.spotImportService = spotImportService;
+        this.contributionRepository = contributionRepository;
     }
 
-    // 테스트용 관광지 하나 저장 
+    // 테스트용 관광지 하나 저장
     @PostMapping("/test")
     public Spot createTestSpot() {
         Spot spot = new Spot("경복궁", "고궁", 126.9770, 37.5796);
         return spotRepository.save(spot);
-    }
-
-    // 관광지 삭제 (테스트 데이터 정리용)
-    @DeleteMapping("/{id}")
-    public void deleteSpot(@PathVariable String id) {
-        spotRepository.deleteById(id);
     }
 
     // 저장된 모든 관광지 조회
@@ -38,14 +38,35 @@ public class SpotController {
         return spotRepository.findAll();
     }
 
-    // TourAPI(지역기반 관광정보조회)로부터 실제 관광지 데이터를 가져와 Spot 컬렉션에 저장
-    // areaCode: 지역코드 (예: 1=서울)
-    // contentTypeId: 관광 콘텐츠 타입 (12=관광지, 14=문화시설, 15=행사/공연/축제 등)
-    // numOfRows: 한 번에 가져올 개수 (기본값 10)
+    // TourAPI로부터 실제 관광지 데이터를 가져와 저장(upsert)
     @PostMapping("/import")
     public List<Spot> importSpots(@RequestParam String areaCode,
                                     @RequestParam String contentTypeId,
                                     @RequestParam(defaultValue = "10") int numOfRows) {
         return spotImportService.importSpots(areaCode, contentTypeId, numOfRows);
+    }
+
+    // 관광지 삭제
+    @DeleteMapping("/{id}")
+    public void deleteSpot(@PathVariable String id) {
+        spotRepository.deleteById(id);
+    }
+
+    // 화제성(trendPercent) 상위 20개 관광지 조회
+    @GetMapping("/trending")
+    public List<Spot> getTrendingSpots() {
+        return spotRepository.findTop20ByOrderByTrendPercentDesc();
+    }
+
+    // 특정 관광지에 달린 기여(팁) 목록 조회
+    @GetMapping("/{id}/contributions")
+    public List<Contribution> getContributionsBySpot(@PathVariable String id) {
+        return contributionRepository.findBySpotId(id);
+    }
+
+    // 키워드로 특정 관광지 하나 수집 (검증용 임시 API)
+    @PostMapping("/import-one")
+    public Spot importOne(@RequestParam String keyword) {
+        return spotImportService.importSpotByKeyword(keyword);
     }
 }

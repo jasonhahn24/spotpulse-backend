@@ -64,11 +64,15 @@ public class SpotImportService {
 
             for (Object obj : itemList) {
                 Map item = (Map) obj;
+
                 String contentId = String.valueOf(item.get("contentid"));
                 String title = (String) item.get("title");
                 String mapXStr = String.valueOf(item.get("mapx"));
                 String mapYStr = String.valueOf(item.get("mapy"));
                 String firstImage = (String) item.get("firstimage");
+                String areaCd = String.valueOf(item.get("lDongRegnCd")); 
+                String signguCdRaw = String.valueOf(item.get("lDongSignguCd"));
+                String signguCd = !signguCdRaw.equals("null") ? areaCd + signguCdRaw : null;  
 
                 if (title == null || mapXStr.equals("null") || mapYStr.equals("null")) continue;
 
@@ -84,6 +88,8 @@ public class SpotImportService {
                 if (firstImage != null && !firstImage.isEmpty()) {
                     spot.setImageUrl(firstImage);
                 }
+                if (!areaCd.equals("null")) spot.setAreaCd(areaCd);
+                if (!signguCd.equals("null")) spot.setSignguCd(signguCd);
 
                 savedSpots.add(spotRepository.save(spot));
             }
@@ -92,5 +98,61 @@ public class SpotImportService {
         }
 
         return savedSpots;
+    }
+
+    // 키워드로 특정 관광지 하나를 수집 (테스트/검증용)
+    public Spot importSpotByKeyword(String keyword) {
+        try {
+            String urlStr = "https://apis.data.go.kr/B551011/KorService2/searchKeyword2"
+                + "?serviceKey=" + serviceKey
+                + "&numOfRows=1"
+                + "&pageNo=1"
+                + "&MobileOS=ETC"
+                + "&MobileApp=SPOTPULSE"
+                + "&_type=json"
+                + "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8")
+                + "&contentTypeId=12";
+
+            URI uri = new URI(urlStr);
+            ResponseEntity<Map> response = restTemplate.getForEntity(uri, Map.class);
+
+            Map body = (Map) response.getBody().get("response");
+            Map responseBody = (Map) body.get("body");
+            Map items = (Map) responseBody.get("items");
+            Object itemObj = items.get("item");
+
+            Map item;
+            if (itemObj instanceof List) {
+                item = (Map) ((List) itemObj).get(0);
+            } else {
+                item = (Map) itemObj;
+            }
+
+            String contentId = String.valueOf(item.get("contentid"));
+            String title = (String) item.get("title");
+            String mapXStr = String.valueOf(item.get("mapx"));
+            String mapYStr = String.valueOf(item.get("mapy"));
+            String firstImage = (String) item.get("firstimage");
+            String areaCd = String.valueOf(item.get("lDongRegnCd"));
+            String signguCdRaw = String.valueOf(item.get("lDongSignguCd"));
+            String signguCd = !signguCdRaw.equals("null") ? areaCd + signguCdRaw : null;  
+            
+            Optional<Spot> existing = spotRepository.findByContentId(contentId);
+            Spot spot = existing.orElseGet(Spot::new);
+
+            spot.setContentId(contentId);
+            spot.setName(title);
+            spot.setCategory("관광지");
+            spot.setMapX(Double.parseDouble(mapXStr));
+            spot.setMapY(Double.parseDouble(mapYStr));
+            if (firstImage != null && !firstImage.isEmpty()) spot.setImageUrl(firstImage);
+            if (!areaCd.equals("null")) spot.setAreaCd(areaCd);
+            if (!signguCd.equals("null")) spot.setSignguCd(signguCd);
+
+            return spotRepository.save(spot);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

@@ -8,7 +8,6 @@ public class Spot {
 
     @Id
     private String id;
-
     private String name;        // 관광지명
     private String category;    // 카테고리 
     private double mapX;        // 경도
@@ -16,6 +15,8 @@ public class Spot {
     private String contentId;   // TourAPI 콘텐츠 ID (upsert 판단 기준)
     private String imageUrl;    // 대표 이미지 URL 
     private int trendPercent;   // 화제성 지표(최근 언급량 등)
+    private String areaCd;      // 연관관광지 API용 지역코드 (lDongRegnCd)
+    private String signguCd;    // 연관관광지 API용 시군구코드 (lDongSignguCd)
 
 
     // 기본 생성자
@@ -44,4 +45,8 @@ public class Spot {
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public int getTrendPercent() { return trendPercent; }
     public void setTrendPercent(int trendPercent) { this.trendPercent = trendPercent; }
+    public String getAreaCd() { return areaCd; }
+    public void setAreaCd(String areaCd) { this.areaCd = areaCd; }
+    public String getSignguCd() { return signguCd; }
+    public void setSignguCd(String signguCd) { this.signguCd = signguCd; }
 }

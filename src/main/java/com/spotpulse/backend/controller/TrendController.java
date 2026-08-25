@@ -1,8 +1,9 @@
 package com.spotpulse.backend.controller;
 
-import com.spotpulse.backend.domain.TrendSnapshot;
 import com.spotpulse.backend.repository.TrendSnapshotRepository;
 import com.spotpulse.backend.service.NaverSearchService;
+import com.spotpulse.backend.service.TrendCollectorScheduler;
+import com.spotpulse.backend.domain.TrendSnapshot;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,11 +14,14 @@ public class TrendController {
 
     private final NaverSearchService naverSearchService;
     private final TrendSnapshotRepository trendSnapshotRepository;
+    private final TrendCollectorScheduler trendCollectorScheduler;
 
     public TrendController(NaverSearchService naverSearchService,
-                            TrendSnapshotRepository trendSnapshotRepository) {
+                            TrendSnapshotRepository trendSnapshotRepository,
+                            TrendCollectorScheduler trendCollectorScheduler) {
         this.naverSearchService = naverSearchService;
         this.trendSnapshotRepository = trendSnapshotRepository;
+        this.trendCollectorScheduler = trendCollectorScheduler;
     }
 
     @GetMapping("/test")
@@ -28,5 +32,11 @@ public class TrendController {
     @GetMapping("/snapshots")
     public List<TrendSnapshot> getAllSnapshots() {
         return trendSnapshotRepository.findAll();
+    }
+
+    @PostMapping("/run-now")
+    public String runNow() {
+        trendCollectorScheduler.runNow();
+        return "배치 실행 완료";
     }
 }
