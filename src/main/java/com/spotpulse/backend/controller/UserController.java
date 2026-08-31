@@ -1,6 +1,7 @@
 package com.spotpulse.backend.controller;
 
 import com.spotpulse.backend.domain.User;
+import com.spotpulse.backend.exception.NotFoundException;
 import com.spotpulse.backend.repository.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,7 +39,7 @@ public class UserController {
     public User loginOrRegister(HttpServletRequest request, @RequestParam(required = false) String nickname) {
         String uid = (String) request.getAttribute("uid");
         if (uid == null) {
-            throw new RuntimeException("인증 토큰이 없습니다.");
+            throw new NotFoundException("인증 토큰이 없습니다.");
         }
 
         Optional<User> existing = userRepository.findById(uid);
@@ -57,10 +58,10 @@ public class UserController {
     public User getMyInfo(HttpServletRequest request) {
         String uid = (String) request.getAttribute("uid");
         if (uid == null) {
-            throw new RuntimeException("인증 토큰이 없습니다.");
+            throw new NotFoundException("인증 토큰이 없습니다.");
         }
 
         return userRepository.findById(uid)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
     }
 }

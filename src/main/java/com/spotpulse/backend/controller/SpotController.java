@@ -5,6 +5,8 @@ import com.spotpulse.backend.domain.Spot;
 import com.spotpulse.backend.repository.ContributionRepository;
 import com.spotpulse.backend.repository.SpotRepository;
 import com.spotpulse.backend.service.SpotImportService;
+import com.spotpulse.backend.exception.NotFoundException;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,6 +51,9 @@ public class SpotController {
     // 관광지 삭제
     @DeleteMapping("/{id}")
     public void deleteSpot(@PathVariable String id) {
+        if (!spotRepository.existsById(id)) {
+            throw new NotFoundException("삭제할 관광지를 찾을 수 없습니다: " + id);
+        }
         spotRepository.deleteById(id);
     }
 

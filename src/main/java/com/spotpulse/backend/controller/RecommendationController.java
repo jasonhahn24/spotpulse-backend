@@ -3,6 +3,7 @@ package com.spotpulse.backend.controller;
 import com.spotpulse.backend.domain.Spot;
 import com.spotpulse.backend.repository.SpotRepository;
 import com.spotpulse.backend.service.RecommendationService;
+import com.spotpulse.backend.exception.NotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -34,7 +35,8 @@ public class RecommendationController {
     // Spot ID만으로 대체 스팟 추천 (areaCd/signguCd 자동 활용)
     @GetMapping("/{spotId}")
     public List<String> recommendBySpot(@PathVariable String spotId) {
-        Spot spot = spotRepository.findById(spotId).orElseThrow();
+        Spot spot = spotRepository.findById(spotId)
+            .orElseThrow(() -> new NotFoundException("해당 관광지를 찾을 수 없습니다: " + spotId));
 
         String baseYm = LocalDate.now().minusMonths(1).format(DateTimeFormatter.ofPattern("yyyyMM"));
         // API는 월 1회 갱신이라 항상 최신 데이터가 확실히 있는 지난달 기준으로 조회
