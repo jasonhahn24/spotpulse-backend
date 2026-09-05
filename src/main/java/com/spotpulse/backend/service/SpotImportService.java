@@ -26,13 +26,9 @@ public class SpotImportService {
         this.spotRepository = spotRepository;
     }
 
-    /**
-     * 지역기반 관광정보조회로 관광지 목록을 가져와 Spot으로 저장
-     * areaCode: 지역코드 (예: 1=서울)
-     * contentTypeId: 콘텐츠 타입 (12=관광지, 14=문화시설, 15=행사 등)
-     */
     public List<Spot> importSpots(String areaCode, String contentTypeId, int numOfRows) {
         List<Spot> savedSpots = new ArrayList<>();
+        String regionName = mapAreaCodeToName(areaCode);
 
         try {
             String urlStr = "https://apis.data.go.kr/B551011/KorService2/areaBasedList2"
@@ -70,13 +66,12 @@ public class SpotImportService {
                 String mapXStr = String.valueOf(item.get("mapx"));
                 String mapYStr = String.valueOf(item.get("mapy"));
                 String firstImage = (String) item.get("firstimage");
-                String areaCd = String.valueOf(item.get("lDongRegnCd")); 
+                String areaCd = String.valueOf(item.get("lDongRegnCd"));
                 String signguCdRaw = String.valueOf(item.get("lDongSignguCd"));
-                String signguCd = !signguCdRaw.equals("null") ? areaCd + signguCdRaw : null;  
+                String signguCd = !signguCdRaw.equals("null") ? areaCd + signguCdRaw : null;
 
                 if (title == null || mapXStr.equals("null") || mapYStr.equals("null")) continue;
 
-                // upsert: 이미 있는 관광지면 업데이트, 없으면 새로 생성
                 Optional<Spot> existing = spotRepository.findByContentId(contentId);
                 Spot spot = existing.orElseGet(Spot::new);
 
@@ -89,7 +84,8 @@ public class SpotImportService {
                     spot.setImageUrl(firstImage);
                 }
                 if (!areaCd.equals("null")) spot.setAreaCd(areaCd);
-                if (!signguCd.equals("null")) spot.setSignguCd(signguCd);
+                if (signguCd != null) spot.setSignguCd(signguCd);
+                spot.setRegionName(regionName);
 
                 savedSpots.add(spotRepository.save(spot));
             }
@@ -100,7 +96,7 @@ public class SpotImportService {
         return savedSpots;
     }
 
-    // 키워드로 특정 관광지 하나를 수집 (테스트/검증용)
+    // 키워드로 특정 관광지 하나를 콕 집어서 수집 (테스트/검증용)
     public Spot importSpotByKeyword(String keyword) {
         try {
             String urlStr = "https://apis.data.go.kr/B551011/KorService2/searchKeyword2"
@@ -135,8 +131,8 @@ public class SpotImportService {
             String firstImage = (String) item.get("firstimage");
             String areaCd = String.valueOf(item.get("lDongRegnCd"));
             String signguCdRaw = String.valueOf(item.get("lDongSignguCd"));
-            String signguCd = !signguCdRaw.equals("null") ? areaCd + signguCdRaw : null;  
-            
+            String signguCd = !signguCdRaw.equals("null") ? areaCd + signguCdRaw : null;
+
             Optional<Spot> existing = spotRepository.findByContentId(contentId);
             Spot spot = existing.orElseGet(Spot::new);
 
@@ -147,12 +143,35 @@ public class SpotImportService {
             spot.setMapY(Double.parseDouble(mapYStr));
             if (firstImage != null && !firstImage.isEmpty()) spot.setImageUrl(firstImage);
             if (!areaCd.equals("null")) spot.setAreaCd(areaCd);
-            if (!signguCd.equals("null")) spot.setSignguCd(signguCd);
+            if (signguCd != null) spot.setSignguCd(signguCd);
 
             return spotRepository.save(spot);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    private String mapAreaCodeToName(String areaCode) {
+        switch (areaCode) {
+            case "1": return "서울";
+            case "2": return "인천";
+            case "3": return "대전";
+            case "4": return "대구";
+            case "5": return "광주";
+            case "6": return "부산";
+            case "7": return "울산";
+            case "8": return "세종";
+            case "31": return "경기";
+            case "32": return "강원";
+            case "33": return "충북";
+            case "34": return "충남";
+            case "35": return "경북";
+            case "36": return "경남";
+            case "37": return "전북";
+            case "38": return "전남";
+            case "39": return "제주";
+            default: return "기타";
         }
     }
 }

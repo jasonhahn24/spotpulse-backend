@@ -17,6 +17,8 @@ public class Spot {
     private int trendPercent;   // 화제성 지표(최근 언급량 등)
     private String areaCd;      // 연관관광지 API용 지역코드 (lDongRegnCd)
     private String signguCd;    // 연관관광지 API용 시군구코드 (lDongSignguCd)
+    private String regionName;  // 지역명 (예: 서울, 부산 등)
+
 
 
     // 기본 생성자
@@ -49,4 +51,6 @@ public class Spot {
     public void setAreaCd(String areaCd) { this.areaCd = areaCd; }
     public String getSignguCd() { return signguCd; }
     public void setSignguCd(String signguCd) { this.signguCd = signguCd; }
+    public String getRegionName() { return regionName; }
+    public void setRegionName(String regionName) { this.regionName = regionName; }
 }

@@ -74,4 +74,10 @@ public class SpotController {
     public Spot importOne(@RequestParam String keyword) {
         return spotImportService.importSpotByKeyword(keyword);
     }
+
+    //지역별 조회
+    @GetMapping("/by-region")
+    public List<Spot> getSpotsByRegion(@RequestParam String regionName) {
+        return spotRepository.findByRegionName(regionName);
+    }
 }
